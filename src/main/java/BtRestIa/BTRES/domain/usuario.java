@@ -1,6 +1,7 @@
 package BtRestIa.BTRES.domain;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -13,18 +14,18 @@ public class usuario {
     private String token;
     private String nombre;
     private String email;
-    @Column(name = "date_created")
-    private LocalDate dateCreated;
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     public usuario() {
     }   
 
-    public usuario(Long id, String token, String nombre, String email, LocalDate dateCreated) {
+    public usuario(Long id, String token, String nombre, String email, LocalDateTime fechaCreacion) {
         this.id = id;
         this.token = token;
         this.nombre = nombre;
         this.email = email;
-        this.dateCreated = dateCreated;
+        this.fechaCreacion = fechaCreacion;
     }
     public Long getId() {
         return id;
@@ -53,11 +54,11 @@ public class usuario {
     public void setEmail(String email) {
         this.email = email;
     }
-    public LocalDate getDateCreated() {
-        return dateCreated;
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
     }
-    public void setDateCreated(LocalDate dateCreated) {
-        this.dateCreated = dateCreated;
+    public void setFechCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 
 
