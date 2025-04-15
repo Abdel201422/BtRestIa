@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "usuario")
-public class usuario {
+public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,10 +17,10 @@ public class usuario {
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
-    public usuario() {
+    public Usuario() {
     }   
 
-    public usuario(Long id, String token, String nombre, String email, LocalDateTime fechaCreacion) {
+    public Usuario(Long id, String token, String nombre, String email, LocalDateTime fechaCreacion) {
         this.id = id;
         this.token = token;
         this.nombre = nombre;

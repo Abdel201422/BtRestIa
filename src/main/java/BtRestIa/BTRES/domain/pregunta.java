@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "pregunta")
-public class pregunta {
+public class Pregunta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,11 +15,11 @@ public class pregunta {
     private String texto;
     private LocalDateTime fecha = LocalDateTime.now();
 
-   public pregunta(){
+   public Pregunta(){
 
    }
 
-   public pregunta(Long id, String token, String texto, LocalDateTime fecha) {
+   public Pregunta(Long id, String token, String texto, LocalDateTime fecha) {
         this.id = id;
         this.token = token;
         this.texto = texto;
