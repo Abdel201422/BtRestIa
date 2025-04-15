@@ -4,25 +4,25 @@ import java.time.LocalDate;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "user")
-public class user {
+@Table(name = "usuario")
+public class usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String token;
-    private String name;
+    private String nombre;
     private String email;
     @Column(name = "date_created")
     private LocalDate dateCreated;
 
-    public user() {
+    public usuario() {
     }   
 
-    public user(Long id, String token, String name, String email, LocalDate dateCreated) {
+    public usuario(Long id, String token, String nombre, String email, LocalDate dateCreated) {
         this.id = id;
         this.token = token;
-        this.name = name;
+        this.nombre = nombre;
         this.email = email;
         this.dateCreated = dateCreated;
     }
@@ -40,11 +40,11 @@ public class user {
         this.token = token;
     }
 
-    public String getName() {
-        return name;
+    public String getNombre() {
+        return nombre;
     }
-    public void setName(String name) {
-        this.name = name;
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 
     public String getEmail() {
