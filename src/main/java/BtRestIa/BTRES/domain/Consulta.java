@@ -28,6 +28,14 @@ public class Consulta {
     public Consulta() {
     }
 
+    public Consulta(Long id, Usuario usuario, ModeloIA modeloIA, Respuesta respuesta, Pregunta pregunta) {
+        this.id = id;
+        this.usuario = usuario;
+        this.modeloIA = modeloIA;
+        this.respuesta = respuesta;
+        this.pregunta = pregunta;
+    }
+
     public Long getId() {
         return id;
     }
