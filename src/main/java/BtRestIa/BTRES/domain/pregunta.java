@@ -15,11 +15,11 @@ public class Pregunta {
     private String texto;
     private LocalDateTime fecha = LocalDateTime.now();
 
-   public Pregunta(){
+    public Pregunta() {
 
-   }
+    }
 
-   public Pregunta(Long id, String token, String texto, LocalDateTime fecha) {
+    public Pregunta(Long id, String token, String texto, LocalDateTime fecha) {
         this.id = id;
         this.token = token;
         this.texto = texto;
@@ -57,6 +57,5 @@ public class Pregunta {
     public void setDateCreated(LocalDateTime fecha) {
         this.fecha = fecha;
     }
-
 
 }

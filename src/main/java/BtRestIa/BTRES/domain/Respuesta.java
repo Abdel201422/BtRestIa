@@ -1,13 +1,14 @@
 package BtRestIa.BTRES.domain;
 
-
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
+@Entity
+@Table(name = "respuesta")
 public class Respuesta {
 
-    @Id 
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String token;
@@ -15,7 +16,7 @@ public class Respuesta {
     private LocalDateTime fecha = LocalDateTime.now();
 
     public Respuesta() {
-    }   
+    }
 
     public Respuesta(Long id, String token, String texto, LocalDateTime fecha) {
         this.id = id;
@@ -23,30 +24,37 @@ public class Respuesta {
         this.texto = texto;
         this.fecha = fecha;
     }
+
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
+
     public String getToken() {
         return token;
-    }   
+    }
+
     public void setToken(String token) {
         this.token = token;
     }
+
     public String getTexto() {
         return texto;
     }
+
     public void setTexto(String texto) {
         this.texto = texto;
     }
+
     public LocalDateTime getFecha() {
         return fecha;
     }
+
     public void setFecha(LocalDateTime fecha) {
         this.fecha = fecha;
     }
-
 
 }
