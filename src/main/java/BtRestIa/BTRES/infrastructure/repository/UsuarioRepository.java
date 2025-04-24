@@ -6,5 +6,5 @@ import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
-    Usuario findyByNombre(String nombreUsuario);
+    Usuario findByNombre(String nombreUsuario);
 }

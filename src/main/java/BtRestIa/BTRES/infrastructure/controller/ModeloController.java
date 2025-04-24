@@ -14,7 +14,7 @@ public class ModeloController {
     public ModeloController(ModeloService modeloService) {
         this.modeloService = modeloService;
     }
-
+    
     @PostMapping("/llama3")
     public String askLlama3(@RequestBody String prompt) {
         return "Modelo: llama3 | Respuesta: " + modeloService.askToLlama3(prompt);

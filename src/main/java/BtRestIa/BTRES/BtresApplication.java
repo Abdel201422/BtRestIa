@@ -11,14 +11,17 @@ import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.ollama.management.ModelManagementOptions;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbacks;
+import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.execution.DefaultToolExecutionExceptionProcessor;
-import org.springframework.ai.tool.execution.ToolExecutionExceptionProcessor;
+import org.springframework.ai.tool.method.MethodToolCallback;
 import org.springframework.ai.tool.resolution.StaticToolCallbackResolver;
 import org.springframework.ai.tool.resolution.ToolCallbackResolver;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.util.ReflectionUtils;
+import java.lang.reflect.Method;
 
 import BtRestIa.BTRES.application.service.BuscarUsuarioTool;
 import io.micrometer.observation.ObservationRegistry;
@@ -36,25 +39,42 @@ public class BtresApplication {
     }
 
 	@Bean
-	@Primary
-    public OllamaChatModel llama3ChatModel(OllamaApi sharedOllamaApi, BuscarUsuarioTool buscarUsuarioTool) {
-       //  List<ToolCallback> toolCallbacks = ToolCallbacks.from(buscarUsuarioTool); // Register the tool here
-       
+@Primary
+public OllamaChatModel llama3ChatModel(OllamaApi sharedOllamaApi, BuscarUsuarioTool buscarUsuarioTool) {
+    // Encuentra el método de la herramienta
+    Method toolMethod = ReflectionUtils.findMethod(BuscarUsuarioTool.class, "buscarUsuarioPorNombre", String.class);
 
+    // Crea el ToolCallback usando MethodToolCallback
+    ToolCallback buscarUsuarioToolCallback = MethodToolCallback.builder()
+        .toolDefinition(ToolDefinition.builder()
+            .name("buscarUsuarioPorNombre")
+            .description("Busca un usuario por su nombre en la base de datos")
+            .inputSchema("{\"type\": \"string\"}") // Esquema de entrada en formato JSON
+            .build())
+        .toolMethod(toolMethod) // Método de la herramienta
+        .toolObject(buscarUsuarioTool) // Instancia de la herramienta
+        .build();
 
-        return OllamaChatModel.builder()
-                .ollamaApi(sharedOllamaApi)
-                .defaultOptions(OllamaOptions.builder()
-                        .model("llama3") 
-                        .build())
-                .toolCallingManager(ToolCallingManager.builder()
-                
-                ) 
-                
-                .observationRegistry(ObservationRegistry.NOOP)
-                .modelManagementOptions(ModelManagementOptions.defaults())
-                .build();
-    }
+    // Crea el ToolCallbackResolver
+    ToolCallbackResolver resolver = new StaticToolCallbackResolver(Arrays.asList(buscarUsuarioToolCallback));
+
+    // Configura el ToolCallingManager
+    ToolCallingManager toolCallingManager = new DefaultToolCallingManager(
+        ObservationRegistry.NOOP,
+        resolver,
+        DefaultToolExecutionExceptionProcessor.builder().build()
+    );
+
+    // Construye el modelo de chat
+    return OllamaChatModel.builder()
+            .ollamaApi(sharedOllamaApi)
+            .defaultOptions(OllamaOptions.builder()
+                    .model("llama3")
+                    .temperature(0.3)
+                    .build())
+            .toolCallingManager(toolCallingManager)
+            .build();
+}
 
 	@Bean
     public OllamaChatModel mistralChatModel(OllamaApi sharedOllamaApi) {
