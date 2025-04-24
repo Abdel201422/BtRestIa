@@ -12,25 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.UUID;
 
 @Service
-public class TokenServiceImpl implements TokenService {
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Override
-    public Usuario validateUsuarioToken(String token) {
-        return usuarioRepository.findByToken(token)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Usuario no encontrado con token: " + token
-                ));
-    }
-
-    @Override
-    public String generateTokenForUsuario(Usuario usuario) {
-        String newToken = UUID.randomUUID().toString();
-        usuario.setToken(newToken);
-        usuarioRepository.save(usuario);
-        return newToken;
-    }
+public class TokenServiceImpl{
+        
+  
 }

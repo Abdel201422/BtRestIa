@@ -1,43 +1,61 @@
 package BtRestIa.BTRES.application.service;
 
-import java.sql.*;
-
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.ai.model.function.Tool;
 
-import dev.langchain4j.agent.tool.Tool;
+import java.util.Map;
 
 @Component
-public class BuscarUsuarioTool  {
-    private final Connection connection;
+public class BuscarUsuarioTool  { 
 
-    public BuscarUsuarioTool(Connection connection) {
-        this.connection = connection;
+    private final JdbcTemplate jdbcTemplate;
+
+    public BuscarUsuarioTool(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Tool 
-    public String buscarUsuarioPorNombre(String nombre) {
+    @Functio(name = "buscarUsuarioPorNombre", description = "Busca un usuario por su nombre en la base de datos")
+
+
+
+    @Override
+    public String getName() {
+        return "buscarUsuarioPorNombre";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Busca un usuario por su nombre en la base de datos";
+    }
+
+    @Override
+    public Object execute(Map<String, Object> params) {
+        String nombre = (String) params.get("nombre");
+        return buscarUsuario(nombre);
+    }
+
+    private String buscarUsuario(String nombre) {
+
+
         String query = "SELECT * FROM usuario WHERE usuario = ?";
-
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, nombre);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-
-               int id = resultSet.getInt("id");
-                String token = resultSet.getString("token");
-                String nombreUsuario = resultSet.getString("nombre");
-                String email = resultSet.getString("email");
-                String fechaCreacion = resultSet.getTimestamp("fecha_creacion").toString();   
-
-               return String.format("Usuario encontrado: ID: %d, Token: %s, Nombre: %s, Email: %s, Fecha de Creación: %s", id, token, nombreUsuario, email, fechaCreacion);
-            } else {
-                return "Usuario no encontrado";
-            } 
-        } catch (SQLException e) {
+       
+        try {
+            return jdbcTemplate.query(
+                query,
+                (rs, rowNum) -> String.format(
+                    "Usuario encontrado: ID: %d, Token: %s, Nombre: %s, Email: %s, Fecha de Creación: %s",
+                    rs.getInt("id"),
+                    rs.getString("token"),
+                    rs.getString("nombre"),
+                    rs.getString("email"),
+                    rs.getTimestamp("fecha_creacion").toString()
+                ),
+                nombre
+            ).stream().findFirst().orElse("Usuario no encontrado");
+        } catch (Exception e) {
             e.printStackTrace();
             return "Error al buscar el usuario: " + e.getMessage();
         }
-
     }
-    
 }
