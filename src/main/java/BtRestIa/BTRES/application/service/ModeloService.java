@@ -9,11 +9,12 @@ public class ModeloService {
     private final OllamaChatModel mistralModel;
     private final BuscarUsuarioTool buscarUsuarioTool;
 
-    public ModeloService(OllamaChatModel llama3Model, OllamaChatModel mistralModel, BuscarUsuarioTool buscarUsuarioTool) {
+    public ModeloService(OllamaChatModel llama3Model, OllamaChatModel mistralModel,
+            BuscarUsuarioTool buscarUsuarioTool) {
         this.llama3Model = llama3Model;
         this.mistralModel = mistralModel;
         this.buscarUsuarioTool = buscarUsuarioTool;
-        
+
     }
 
     public String askToLlama3(String request) {
@@ -21,16 +22,13 @@ public class ModeloService {
             String nombre = extraerNombreDePrompt(request);
             return buscarUsuarioTool.buscarUsuarioPorNombre(nombre);
         }
-     
+
         return llama3Model.call(request);
     }
-
-
 
     public String askToMistral(String request) {
         return mistralModel.call(request);
     }
-
 
     private boolean debeUsarBuscarUsuarioTool(String request) {
         return request.toLowerCase().contains("usuario") && request.toLowerCase().contains("nombre");
@@ -42,7 +40,5 @@ public class ModeloService {
         }
         return "";
     }
-
-    
 
 }

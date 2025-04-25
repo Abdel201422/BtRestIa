@@ -29,59 +29,58 @@ import io.micrometer.observation.ObservationRegistry;
 @SpringBootApplication
 public class BtresApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(BtresApplication.class, args);
-	}
-
-	@Bean
-    public OllamaApi sharedOllamaApi() {
-        return new OllamaApi("http://localhost:11434"); 
+    public static void main(String[] args) {
+        SpringApplication.run(BtresApplication.class, args);
     }
 
-	@Bean
-@Primary
-public OllamaChatModel llama3ChatModel(OllamaApi sharedOllamaApi, BuscarUsuarioTool buscarUsuarioTool) {
-    // Encuentra el método de la herramienta
-    Method toolMethod = ReflectionUtils.findMethod(BuscarUsuarioTool.class, "buscarUsuarioPorNombre", String.class);
+    @Bean
+    public OllamaApi sharedOllamaApi() {
+        return new OllamaApi("http://localhost:11434");
+    }
 
-    // Crea el ToolCallback usando MethodToolCallback
-    ToolCallback buscarUsuarioToolCallback = MethodToolCallback.builder()
-        .toolDefinition(ToolDefinition.builder()
-            .name("buscarUsuarioPorNombre")
-            .description("Busca un usuario por su nombre en la base de datos")
-            .inputSchema("{\"type\": \"string\"}") // Esquema de entrada en formato JSON
-            .build())
-        .toolMethod(toolMethod) // Método de la herramienta
-        .toolObject(buscarUsuarioTool) // Instancia de la herramienta
-        .build();
+    @Bean
+    @Primary
+    public OllamaChatModel llama3ChatModel(OllamaApi sharedOllamaApi, BuscarUsuarioTool buscarUsuarioTool) {
+        // Encuentra el método de la herramienta
+        Method toolMethod = ReflectionUtils.findMethod(BuscarUsuarioTool.class, "buscarUsuarioPorNombre", String.class);
 
-    // Crea el ToolCallbackResolver
-    ToolCallbackResolver resolver = new StaticToolCallbackResolver(Arrays.asList(buscarUsuarioToolCallback));
+        // Crea el ToolCallback usando MethodToolCallback
+        ToolCallback buscarUsuarioToolCallback = MethodToolCallback.builder()
+                .toolDefinition(ToolDefinition.builder()
+                        .name("buscarUsuarioPorNombre")
+                        .description("Busca un usuario por su nombre en la base de datos")
+                        .inputSchema("{\"type\": \"string\"}") // Esquema de entrada en formato JSON
+                        .build())
+                .toolMethod(toolMethod) // Método de la herramienta
+                .toolObject(buscarUsuarioTool) // Instancia de la herramienta
+                .build();
 
-    // Configura el ToolCallingManager
-    ToolCallingManager toolCallingManager = new DefaultToolCallingManager(
-        ObservationRegistry.NOOP,
-        resolver,
-        DefaultToolExecutionExceptionProcessor.builder().build()
-    );
+        // Crea el ToolCallbackResolver
+        ToolCallbackResolver resolver = new StaticToolCallbackResolver(Arrays.asList(buscarUsuarioToolCallback));
 
-    // Construye el modelo de chat
-    return OllamaChatModel.builder()
-            .ollamaApi(sharedOllamaApi)
-            .defaultOptions(OllamaOptions.builder()
-                    .model("llama3")
-                    .temperature(0.3)
-                    .build())
-            .toolCallingManager(toolCallingManager)
-            .build();
-}
+        // Configura el ToolCallingManager
+        ToolCallingManager toolCallingManager = new DefaultToolCallingManager(
+                ObservationRegistry.NOOP,
+                resolver,
+                DefaultToolExecutionExceptionProcessor.builder().build());
 
-	@Bean
+        // Construye el modelo de chat
+        return OllamaChatModel.builder()
+                .ollamaApi(sharedOllamaApi)
+                .defaultOptions(OllamaOptions.builder()
+                        .model("llama3")
+                        .temperature(0.3)
+                        .build())
+                .toolCallingManager(toolCallingManager)
+                .build();
+    }
+
+    @Bean
     public OllamaChatModel mistralChatModel(OllamaApi sharedOllamaApi) {
         return OllamaChatModel.builder()
                 .ollamaApi(sharedOllamaApi)
                 .defaultOptions(OllamaOptions.builder()
-                        .model("mistral") 
+                        .model("mistral")
                         .build())
                 .toolCallingManager(ToolCallingManager.builder().build())
                 .observationRegistry(ObservationRegistry.NOOP)
