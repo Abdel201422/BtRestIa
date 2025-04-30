@@ -31,4 +31,12 @@ public class RespuestaDto {
                 respuesta.getFecha()
         );
     }
+
+    public static RespuestaDto of(String token, String texto, LocalDateTime fecha) {
+        RespuestaDto dto = new RespuestaDto();
+        dto.setToken(token);
+        dto.setTexto(texto);
+        dto.setFecha(fecha);
+        return dto;
+    }
 }
