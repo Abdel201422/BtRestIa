@@ -26,4 +26,5 @@ public class ModeloController {
         return "Modelo: mistral | Respuesta: " + modeloService.askToMistral(prompt);
     }
 
+    
 }

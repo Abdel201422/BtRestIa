@@ -3,18 +3,20 @@ package BtRestIa.BTRES.application.service;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.stereotype.Service;
 
+
 @Service
 public class ModeloService {
     private final OllamaChatModel llama3Model;
     private final OllamaChatModel mistralModel;
     private final BuscarUsuarioTool buscarUsuarioTool;
 
+
     public ModeloService(OllamaChatModel llama3Model, OllamaChatModel mistralModel,
             BuscarUsuarioTool buscarUsuarioTool) {
         this.llama3Model = llama3Model;
         this.mistralModel = mistralModel;
         this.buscarUsuarioTool = buscarUsuarioTool;
-
+    
     }
 
     public String askToLlama3(String request) {
@@ -29,6 +31,7 @@ public class ModeloService {
     public String askToMistral(String request) {
         return mistralModel.call(request);
     }
+
 
     private boolean debeUsarBuscarUsuarioTool(String request) {
         return request.toLowerCase().contains("usuario") && request.toLowerCase().contains("nombre");

@@ -24,7 +24,7 @@ public class BuscarUsuarioTool {
             return jdbcTemplate.query(
                     query,
                     (rs, rowNum) -> String.format(
-                            "Usuario encontrado: ID: %d, Token: %s, Nombre: %s, Email: %s, Fecha de Creación: %s",
+                            "{\"ID\": \"%d\", \"Token\": \"%s\", \"Nombre\": \"%s\", \"Email\": \"%s\", \"Fecha de Creación\": \"%s\"}",
                             rs.getInt("id"),
                             rs.getString("token"),
                             rs.getString("nombre"),

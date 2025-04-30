@@ -7,6 +7,7 @@ import org.springframework.ai.model.tool.DefaultToolCallingManager;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaApi;
+import org.springframework.ai.ollama.api.OllamaModel;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.ollama.management.ModelManagementOptions;
 import org.springframework.ai.tool.ToolCallback;
@@ -43,14 +44,16 @@ public class BtresApplication {
     public OllamaChatModel llama3ChatModel(OllamaApi sharedOllamaApi, BuscarUsuarioTool buscarUsuarioTool) {
         // Encuentra el método de la herramienta
         Method toolMethod = ReflectionUtils.findMethod(BuscarUsuarioTool.class, "buscarUsuarioPorNombre", String.class);
-
+        if (toolMethod == null) {
+                throw new IllegalStateException("El método buscarUsuarioPorNombre no fue encontrado en la clase BuscarUsuarioTool.");
+            }
+        
         // Crea el ToolCallback usando MethodToolCallback
         ToolCallback buscarUsuarioToolCallback = MethodToolCallback.builder()
                 .toolDefinition(ToolDefinition.builder()
                         .name("buscarUsuarioPorNombre")
                         .description("Busca un usuario por su nombre en la base de datos")
-                        .inputSchema("{\"type\": \"string\"}") // Esquema de entrada en formato JSON
-                        .build())
+                        .inputSchema("{\"type\": \"object\", \"properties\": {\"nombre\": {\"type\": \"string\"}}, \"required\": [\"nombre\"]}")                        .build())
                 .toolMethod(toolMethod) // Método de la herramienta
                 .toolObject(buscarUsuarioTool) // Instancia de la herramienta
                 .build();
@@ -74,6 +77,10 @@ public class BtresApplication {
                 .toolCallingManager(toolCallingManager)
                 .build();
     }
+
+    
+
+
 
     @Bean
     public OllamaChatModel mistralChatModel(OllamaApi sharedOllamaApi) {
