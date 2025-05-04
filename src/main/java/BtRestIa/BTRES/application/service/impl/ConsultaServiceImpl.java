@@ -13,9 +13,8 @@ import BtRestIa.BTRES.infrastructure.dto.request.PreguntaRequestDto;
 import BtRestIa.BTRES.infrastructure.dto.response.RespuestaDto;
 import BtRestIa.BTRES.infrastructure.repository.*;
 
-import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class ConsultaServiceImpl implements ConsultaService {
@@ -59,19 +58,19 @@ public class ConsultaServiceImpl implements ConsultaService {
                 .orElseThrow(() -> new RuntimeException("Modelo IA no disponible"));
 
         // 4) construir y llamar a IA
-        OllamaChatModel chatModel = modelBuilder
-                .defaultOptions(
-                        OllamaOptions.builder()
-                                .model(dto.getModelo())
-                                .build()
-                )
-                .build();
+        OllamaChatModel chatModel = modelBuilder.build();
         ChatClient chatClient = ChatClient.create(chatModel);
+
         ChatResponse chatResponse = chatClient
                 .prompt(dto.getTexto())
                 .call()
                 .chatResponse();
-        String textoRespuesta = chatResponse.getResult().getOutput().getText();
+
+        // 4.1) comprobaciones de nulidad
+        Objects.requireNonNull(chatResponse, "La llamada a la IA devolvió chatResponse null");
+        var result = Objects.requireNonNull(chatResponse.getResult(), "getResult() es null");
+        var output = Objects.requireNonNull(result.getOutput(), "getOutput() es null");
+        String textoRespuesta = Objects.requireNonNull(output.getText(), "getText() es null");
 
         // 5) guardar respuesta
         Respuesta respuesta = new Respuesta();
@@ -90,6 +89,4 @@ public class ConsultaServiceImpl implements ConsultaService {
         // 7) devolver DTO
         return RespuestaDto.of(respuesta.getToken(), respuesta.getTexto(), respuesta.getFecha());
     }
-
-
 }
