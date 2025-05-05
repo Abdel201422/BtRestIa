@@ -1,5 +1,6 @@
 package BtRestIa.BTRES.application.service;
 
+import BtRestIa.BTRES.infrastructure.dto.response.PreguntaDto;
 import BtRestIa.BTRES.infrastructure.dto.response.RespuestaDto;
 import BtRestIa.BTRES.infrastructure.dto.request.PreguntaRequestDto;
 import BtRestIa.BTRES.domain.Pregunta;
@@ -14,5 +15,7 @@ public interface ConsultaService {
      */
     RespuestaDto procesarPregunta(PreguntaRequestDto dto);
 
+    RespuestaDto obtenerRespuestaPorToken(String token);
 
+    PreguntaDto obtenerPreguntaPorToken(String token);
 }
