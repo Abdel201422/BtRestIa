@@ -82,9 +82,6 @@ public class ConsultaServiceImpl implements ConsultaService {
         return RespuestaDto.of(respuesta.getToken(), respuesta.getTexto(), respuesta.getFecha());
     }
 
-
-        }
-
         @Override
         @Transactional(readOnly = true)
         public PreguntaDto obtenerPreguntaPorToken(String token) {
