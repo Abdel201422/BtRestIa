@@ -1,9 +1,14 @@
 package BtRestIa.BTRES.domain;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "consulta")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Consulta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,56 +29,4 @@ public class Consulta {
     @OneToOne
     @JoinColumn(name = "pregunta_id")
     private Pregunta pregunta;
-
-    public Consulta() {
-    }
-
-    public Consulta(Long id, Usuario usuario, ModeloIA modeloIA, Respuesta respuesta, Pregunta pregunta) {
-        this.id = id;
-        this.usuario = usuario;
-        this.modeloIA = modeloIA;
-        this.respuesta = respuesta;
-        this.pregunta = pregunta;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
-    public ModeloIA getModeloIA() {
-        return modeloIA;
-    }
-
-    public void setModeloIA(ModeloIA modeloIA) {
-        this.modeloIA = modeloIA;
-    }
-
-    public Respuesta getRespuesta() {
-        return respuesta;
-    }
-
-    public void setRespuesta(Respuesta respuesta) {
-        this.respuesta = respuesta;
-    }
-
-    public Pregunta getPregunta() {
-        return pregunta;
-    }
-
-    public void setPregunta(Pregunta pregunta) {
-        this.pregunta = pregunta;
-    }
-
 }

@@ -1,9 +1,9 @@
 package BtRestIa.BTRES.application.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import BtRestIa.BTRES.application.service.ConsultaService;
@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ConsultaServiceImpl implements ConsultaService {
 
     private final TokenService tokenService;
@@ -26,67 +27,56 @@ public class ConsultaServiceImpl implements ConsultaService {
     private final Modelo_iaRepository modeloIARepository;
     private final OllamaChatModel.Builder modelBuilder;
 
-    public ConsultaServiceImpl(TokenService tokenService,
-                               PreguntaRepository preguntaRepository,
-                               RespuestaRepository respuestaRepository,
-                               ConsultaRepository consultaRepository,
-                               Modelo_iaRepository modeloIARepository,
-                               OllamaChatModel.Builder modelBuilder) {
-        this.tokenService = tokenService;
-        this.preguntaRepository = preguntaRepository;
-        this.respuestaRepository = respuestaRepository;
-        this.consultaRepository = consultaRepository;
-        this.modeloIARepository = modeloIARepository;
-        this.modelBuilder = modelBuilder;
-    }
-
     @Override
     @Transactional
     public RespuestaDto procesarPregunta(PreguntaRequestDto dto) {
+
         // 1) validar token de usuario
         Usuario usuario = tokenService.validateUsuarioToken(dto.getToken());
 
         // 2) guardar pregunta
-        Pregunta pregunta = new Pregunta();
-        pregunta.setToken(UUID.randomUUID().toString());
-        pregunta.setTexto(dto.getTexto());
-        pregunta = preguntaRepository.save(pregunta);
+        Pregunta pregunta = preguntaRepository.save(
+                Pregunta.builder()
+                        .token(UUID.randomUUID().toString())
+                        .texto(dto.getTexto())
+                        .build()
+        );
 
         // 3) verificar modelo IA
-        ModeloIA modeloEntity = modeloIARepository
-                .findByNombreAndActivoTrue(dto.getModelo())
+        ModeloIA modeloEntity = modeloIARepository.findByNombreAndActivoTrue(dto.getModelo())
                 .orElseThrow(() -> new RuntimeException("Modelo IA no disponible"));
 
         // 4) construir y llamar a IA
-        OllamaChatModel chatModel = modelBuilder.build();
-        ChatClient chatClient = ChatClient.create(chatModel);
-
-        ChatResponse chatResponse = chatClient
+        ChatResponse chatResponse = ChatClient.create(modelBuilder.build())
                 .prompt(dto.getTexto())
                 .call()
                 .chatResponse();
 
-        // 4.1) comprobaciones de nulidad
-        Objects.requireNonNull(chatResponse, "La llamada a la IA devolvió chatResponse null");
-        var result = Objects.requireNonNull(chatResponse.getResult(), "getResult() es null");
-        var output = Objects.requireNonNull(result.getOutput(), "getOutput() es null");
-        String textoRespuesta = Objects.requireNonNull(output.getText(), "getText() es null");
+        // 5) comprobaciones de nulidad
+        String textoRespuesta = Objects.requireNonNull(
+                Objects.requireNonNull(
+                                Objects.requireNonNull(chatResponse, "La llamada a la IA devolvió chatResponse null")
+                                        .getResult(), "getResult() es null")
+                                        .getOutput(), "getOutput() es null").getText();
 
-        // 5) guardar respuesta
-        Respuesta respuesta = new Respuesta();
-        respuesta.setToken(UUID.randomUUID().toString());
-        respuesta.setTexto(textoRespuesta);
-        respuesta = respuestaRepository.save(respuesta);
+        // 6) guardar respuesta
+        Respuesta respuesta = respuestaRepository.save(
+                Respuesta.builder()
+                        .token(UUID.randomUUID().toString())
+                        .texto(textoRespuesta)
+                        .build()
+        );
 
-        // 6) guardar consulta completa
-        Consulta consulta = new Consulta();
-        consulta.setUsuario(usuario);
-        consulta.setPregunta(pregunta);
-        consulta.setRespuesta(respuesta);
-        consulta.setModeloIA(modeloEntity);
+        // 7) guardar consulta completa
+        Consulta consulta = Consulta.builder()
+                .usuario(usuario)
+                .pregunta(pregunta)
+                .respuesta(respuesta)
+                .modeloIA(modeloEntity)
+                .build();
         consultaRepository.save(consulta);
 
-        // 7) devolver DTO
+        // 8) devolver DTO
         return RespuestaDto.of(respuesta.getToken(), respuesta.getTexto(), respuesta.getFecha());
     }
 }

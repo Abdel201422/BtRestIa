@@ -1,7 +1,12 @@
 package BtRestIa.BTRES.infrastructure.dto.response;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 public class PreguntaDto {
     private String token;
     private String texto;
@@ -15,20 +20,11 @@ public class PreguntaDto {
         this.fecha = fecha;
     }
 
-    public String getToken() { return token; }
-    public void setToken(String token) { this.token = token; }
-
-    public String getTexto() { return texto; }
-    public void setTexto(String texto) { this.texto = texto; }
-
-    public LocalDateTime getFecha() { return fecha; }
-    public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
-
     public static PreguntaDto fromEntity(BtRestIa.BTRES.domain.Pregunta pregunta) {
         return new PreguntaDto(
                 pregunta.getToken(),
                 pregunta.getTexto(),
-                pregunta.getfecha()
+                pregunta.getFecha()
         );
     }
 }
