@@ -10,6 +10,7 @@ import BtRestIa.BTRES.application.service.ConsultaService;
 import BtRestIa.BTRES.application.service.TokenService;
 import BtRestIa.BTRES.domain.*;
 import BtRestIa.BTRES.infrastructure.dto.request.PreguntaRequestDto;
+import BtRestIa.BTRES.infrastructure.dto.response.PreguntaDto;
 import BtRestIa.BTRES.infrastructure.dto.response.RespuestaDto;
 import BtRestIa.BTRES.infrastructure.repository.*;
 
@@ -20,12 +21,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ConsultaServiceImpl implements ConsultaService {
 
-    private final TokenService tokenService;
-    private final PreguntaRepository preguntaRepository;
-    private final RespuestaRepository respuestaRepository;
-    private final ConsultaRepository consultaRepository;
-    private final Modelo_iaRepository modeloIARepository;
-    private final OllamaChatModel.Builder modelBuilder;
+        private final TokenService tokenService;
+        private final PreguntaRepository preguntaRepository;
+        private final RespuestaRepository respuestaRepository;
+        private final ConsultaRepository consultaRepository;
+        private final Modelo_iaRepository modeloIARepository;
+        private final OllamaChatModel.Builder modelBuilder;
+
 
     @Override
     @Transactional
@@ -79,4 +81,25 @@ public class ConsultaServiceImpl implements ConsultaService {
         // 8) devolver DTO
         return RespuestaDto.of(respuesta.getToken(), respuesta.getTexto(), respuesta.getFecha());
     }
+
+
+        }
+
+        @Override
+        @Transactional(readOnly = true)
+        public PreguntaDto obtenerPreguntaPorToken(String token) {
+                Pregunta pregunta = preguntaRepository.findByToken(token)
+                                .orElseThrow(() -> new RuntimeException("Pregunta no encontrada"));
+                return PreguntaDto.fromEntity(pregunta);
+        }
+
+        @Override
+        @Transactional(readOnly = true)
+        public RespuestaDto obtenerRespuestaPorToken(String token) {
+                Respuesta respuesta = respuestaRepository.findByToken(token)
+                                .orElseThrow(() -> new RuntimeException("Respuesta no encontrada"));
+                return RespuestaDto.fromEntity(respuesta);
+        }
+
 }
+
