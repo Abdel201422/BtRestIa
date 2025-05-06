@@ -20,8 +20,7 @@ public class ConsultaController {
 
     @PostMapping("/preguntar")
     public ResponseEntity<RespuestaDto> preguntar(@RequestBody PreguntaRequestDto dto) {
-        RespuestaDto respuesta = consultaService.procesarPregunta(dto);
-        return ResponseEntity.ok(respuesta);
+        return ResponseEntity.ok(consultaService.procesarPregunta(dto));
     }
 
     @GetMapping("/respuesta/{token}")

@@ -25,7 +25,7 @@ public class ConsultaServiceImpl implements ConsultaService {
         private final PreguntaRepository preguntaRepository;
         private final RespuestaRepository respuestaRepository;
         private final ConsultaRepository consultaRepository;
-        private final Modelo_iaRepository modeloIARepository;
+        private final ModeloIaRepository modeloIARepository;
         private final OllamaChatModel.Builder modelBuilder;
 
 
@@ -82,7 +82,6 @@ public class ConsultaServiceImpl implements ConsultaService {
     }
 
         @Override
-        @Transactional(readOnly = true)
         public PreguntaDto obtenerPreguntaPorToken(String token) {
                 Pregunta pregunta = preguntaRepository.findByToken(token)
                                 .orElseThrow(() -> new RuntimeException("Pregunta no encontrada"));
@@ -90,11 +89,9 @@ public class ConsultaServiceImpl implements ConsultaService {
         }
 
         @Override
-        @Transactional(readOnly = true)
         public RespuestaDto obtenerRespuestaPorToken(String token) {
-                Respuesta respuesta = respuestaRepository.findByToken(token)
-                                .orElseThrow(() -> new RuntimeException("Respuesta no encontrada"));
-                return RespuestaDto.fromEntity(respuesta);
+                return RespuestaDto.fromEntity(respuestaRepository.findByToken(token)
+                                .orElseThrow(() -> new RuntimeException("Respuesta no encontrada")));
         }
 
 }
