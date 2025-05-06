@@ -31,7 +31,7 @@ import BtRestIa.BTRES.domain.ModeloIA;
 import BtRestIa.BTRES.infrastructure.dto.request.PreguntaRequestDto;
 import BtRestIa.BTRES.infrastructure.dto.response.RespuestaDto;
 import BtRestIa.BTRES.infrastructure.repository.ConsultaRepository;
-import BtRestIa.BTRES.infrastructure.repository.Modelo_iaRepository;
+import BtRestIa.BTRES.infrastructure.repository.ModeloIaRepository;
 import BtRestIa.BTRES.infrastructure.repository.PreguntaRepository;
 import BtRestIa.BTRES.infrastructure.repository.RespuestaRepository;
 import BtRestIa.BTRES.infrastructure.dto.response.PreguntaDto;
@@ -43,7 +43,7 @@ class ConsultaServiceImplTest {
     @Mock private PreguntaRepository preguntaRepo;
     @Mock private RespuestaRepository respuestaRepo;
     @Mock private ConsultaRepository consultaRepo;
-    @Mock private Modelo_iaRepository modeloRepo;
+    @Mock private ModeloIaRepository modeloRepo;
     @Mock private OllamaChatModel.Builder modelBuilder;
     @Mock private OllamaChatModel chatModel;
 
