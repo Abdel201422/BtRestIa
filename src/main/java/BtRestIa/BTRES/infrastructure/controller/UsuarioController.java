@@ -21,13 +21,11 @@ public class UsuarioController {
 
     @GetMapping("/{token}/preguntas")
     public ResponseEntity<List<Pregunta>> getPreguntasUsuario(@PathVariable String token) {
-        List<Pregunta> preguntas = usuarioService.obtenerPreguntasPorUsuario(token);
-        return ResponseEntity.ok(preguntas);
+        return ResponseEntity.ok(usuarioService.obtenerPreguntasPorUsuario(token));
     }
 
     @GetMapping("/{token}/respuestas")
     public ResponseEntity<List<Respuesta>> getRespuestasUsuario(@PathVariable String token) {
-        List<Respuesta> respuestas = usuarioService.obtenerRespuestasPorUsuario(token);
-        return ResponseEntity.ok(respuestas);
+        return ResponseEntity.ok(usuarioService.obtenerRespuestasPorUsuario(token));
     }
 }

@@ -3,10 +3,6 @@ package BtRestIa.BTRES.application.service;
 import BtRestIa.BTRES.infrastructure.dto.response.PreguntaDto;
 import BtRestIa.BTRES.infrastructure.dto.response.RespuestaDto;
 import BtRestIa.BTRES.infrastructure.dto.request.PreguntaRequestDto;
-import BtRestIa.BTRES.domain.Pregunta;
-import BtRestIa.BTRES.domain.Respuesta;
-
-import java.util.List;
 
 public interface ConsultaService {
     /**
