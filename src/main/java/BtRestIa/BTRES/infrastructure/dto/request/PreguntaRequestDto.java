@@ -1,5 +1,10 @@
 package BtRestIa.BTRES.infrastructure.dto.request;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class PreguntaRequestDto {
     private String token;
     private String texto;
@@ -13,23 +18,4 @@ public class PreguntaRequestDto {
         this.modelo = modelo;
     }
 
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public String getTexto() {
-        return texto;
-    }
-
-    public void setTexto(String texto) {
-        this.texto = texto;
-    }
-
-    public String getModelo(){ return modelo; }
-
-    public void setModelo(String modelo){ this.modelo = modelo; }
 }

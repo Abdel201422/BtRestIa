@@ -70,13 +70,12 @@ public class ConsultaServiceImpl implements ConsultaService {
         );
 
         // 7) guardar consulta completa
-        Consulta consulta = Consulta.builder()
+        consultaRepository.save(Consulta.builder()
                 .usuario(usuario)
                 .pregunta(pregunta)
                 .respuesta(respuesta)
                 .modeloIA(modeloEntity)
-                .build();
-        consultaRepository.save(consulta);
+                .build());
 
         // 8) devolver DTO
         return RespuestaDto.of(respuesta.getToken(), respuesta.getTexto(), respuesta.getFecha());

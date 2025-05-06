@@ -50,4 +50,6 @@ public class ModeloIA {
         return activo;
     }
 
+    public void setActivo(boolean activo) { this.activo = activo;
+    }
 }
