@@ -26,6 +26,7 @@ public class TokenServiceImpl implements TokenService {
                 ));
     }
 
+
     @Override
     public String generateTokenForUsuario(Usuario usuario) {
         String newToken = UUID.randomUUID().toString();

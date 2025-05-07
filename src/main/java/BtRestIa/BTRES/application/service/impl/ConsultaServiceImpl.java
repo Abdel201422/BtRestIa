@@ -21,12 +21,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ConsultaServiceImpl implements ConsultaService {
 
-        private final TokenService tokenService;
-        private final PreguntaRepository preguntaRepository;
-        private final RespuestaRepository respuestaRepository;
-        private final ConsultaRepository consultaRepository;
-        private final ModeloIaRepository modeloIARepository;
-        private final OllamaChatModel.Builder modelBuilder;
+    private final TokenService tokenService;
+    private final PreguntaRepository preguntaRepository;
+    private final RespuestaRepository respuestaRepository;
+    private final ConsultaRepository consultaRepository;
+    private final ModeloIaRepository modeloIARepository;
+    private final OllamaChatModel.Builder modelBuilder;
 
 
     @Override
@@ -59,7 +59,7 @@ public class ConsultaServiceImpl implements ConsultaService {
                 Objects.requireNonNull(
                                 Objects.requireNonNull(chatResponse, "La llamada a la IA devolvió chatResponse null")
                                         .getResult(), "getResult() es null")
-                                        .getOutput(), "getOutput() es null").getText();
+                        .getOutput(), "getOutput() es null").getText();
 
         // 6) guardar respuesta
         Respuesta respuesta = respuestaRepository.save(
@@ -70,29 +70,30 @@ public class ConsultaServiceImpl implements ConsultaService {
         );
 
         // 7) guardar consulta completa
-        consultaRepository.save(Consulta.builder()
-                .usuario(usuario)
-                .pregunta(pregunta)
-                .respuesta(respuesta)
-                .modeloIA(modeloEntity)
-                .build());
+        consultaRepository.save(
+                Consulta.builder()
+                        .usuario(usuario)
+                        .pregunta(pregunta)
+                        .respuesta(respuesta)
+                        .modeloIA(modeloEntity)
+                        .build());
 
         // 8) devolver DTO
         return RespuestaDto.of(respuesta.getToken(), respuesta.getTexto(), respuesta.getFecha());
     }
 
-        @Override
-        public PreguntaDto obtenerPreguntaPorToken(String token) {
-                Pregunta pregunta = preguntaRepository.findByToken(token)
-                                .orElseThrow(() -> new RuntimeException("Pregunta no encontrada"));
-                return PreguntaDto.fromEntity(pregunta);
-        }
+    @Override
+    public PreguntaDto obtenerPreguntaPorToken(String token) {
+        Pregunta pregunta = preguntaRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Pregunta no encontrada"));
+        return PreguntaDto.fromEntity(pregunta);
+    }
 
-        @Override
-        public RespuestaDto obtenerRespuestaPorToken(String token) {
-                return RespuestaDto.fromEntity(respuestaRepository.findByToken(token)
-                                .orElseThrow(() -> new RuntimeException("Respuesta no encontrada")));
-        }
+    @Override
+    public RespuestaDto obtenerRespuestaPorToken(String token) {
+        return RespuestaDto.fromEntity(respuestaRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Respuesta no encontrada")));
+    }
 
 }
 
