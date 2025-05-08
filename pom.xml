@@ -14,7 +14,7 @@
 
     <groupId>BtRestIa</groupId>
     <artifactId>BTRES</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>BTRES</name>
     <description>Proyecto Spring Boot con Spring AI (Ollama)</description>
 
@@ -150,7 +150,6 @@
                                 <exclude>**/dto/response/*.class</exclude>
                                 <exclude>**/BtresApplication.class</exclude>
                                 <exclude>**/*$Lombok*.class</exclude>
-                                <exclude>**/*Test.class</exclude>
                             </excludes>
                         </configuration>
                     </execution>

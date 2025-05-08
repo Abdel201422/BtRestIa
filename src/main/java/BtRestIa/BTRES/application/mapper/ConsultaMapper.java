@@ -7,7 +7,7 @@ import BtRestIa.BTRES.infrastructure.dto.response.RespuestaDto;
 
 public class ConsultaMapper {
 
-    private ConsultaMapper() {}
+    ConsultaMapper() {}
 
     public static PreguntaDto toPreguntaDto(Consulta consulta) {
         return PreguntaDto.fromEntity(consulta.getPregunta());
