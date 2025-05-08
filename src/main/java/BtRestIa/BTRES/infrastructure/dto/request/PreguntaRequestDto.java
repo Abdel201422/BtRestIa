@@ -1,10 +1,8 @@
 package BtRestIa.BTRES.infrastructure.dto.request;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
-@Getter
+@Data
 public class PreguntaRequestDto {
     private String token;
     private String texto;

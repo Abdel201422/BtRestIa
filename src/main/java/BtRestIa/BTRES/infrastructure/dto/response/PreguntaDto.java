@@ -1,12 +1,9 @@
 package BtRestIa.BTRES.infrastructure.dto.response;
 
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.Data;
 import java.time.LocalDateTime;
 
-@Setter
-@Getter
+@Data
 public class PreguntaDto {
     private String token;
     private String texto;

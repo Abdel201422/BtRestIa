@@ -34,7 +34,7 @@ class ModeloIaControllerTest {
     }
 
     @Test
-    void testGetModeloIaRepository() {
+    void getModeloIaRepository_devuelveListaDeModelos() {
         List<ModeloIA> modelos = Arrays.asList(modelo1, modelo2);
         when(modeloIaRepositoryMock.findAll()).thenReturn(modelos);
 

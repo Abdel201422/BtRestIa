@@ -39,7 +39,7 @@ class ConsultaControllerTest {
     }
 
     @Test
-    void testPreguntar() {
+    void preguntar_conPeticionValida_devuelveRespuestaDto() {
         when(consultaServiceMock.procesarPregunta(preguntaRequestDto)).thenReturn(respuestaDto);
 
         ResponseEntity<RespuestaDto> response = consultaController.preguntar(preguntaRequestDto);
@@ -50,7 +50,7 @@ class ConsultaControllerTest {
     }
 
     @Test
-    void testObtenerRespuestaPorToken() {
+    void obtenerRespuestaPorToken_conTokenValido_devuelveRespuestaDto() {
         String token = "response-token";
         when(consultaServiceMock.obtenerRespuestaPorToken(token)).thenReturn(respuestaDto);
 
@@ -62,7 +62,7 @@ class ConsultaControllerTest {
     }
 
     @Test
-    void testObtenerPreguntaPorToken() {
+    void obtenerPreguntaPorToken_conTokenValido_devuelvePreguntaDto() {
         String token = "question-token";
         when(consultaServiceMock.obtenerPreguntaPorToken(token)).thenReturn(preguntaDto);
 

@@ -41,7 +41,7 @@ class UsuarioControllerTest {
     }
 
     @Test
-    void testGetPreguntasUsuario() {
+    void getPreguntasUsuario_conTokenValido_devuelveLista() {
         String token = "user-token";
         List<Pregunta> preguntas = Arrays.asList(pregunta1, pregunta2);
         when(usuarioServiceMock.obtenerPreguntasPorUsuario(token)).thenReturn(preguntas);
@@ -54,7 +54,7 @@ class UsuarioControllerTest {
     }
 
     @Test
-    void testGetRespuestasUsuario() {
+    void getRespuestasUsuario_conTokenValido_devuelveLista() {
         String token = "user-token";
         List<Respuesta> respuestas = Arrays.asList(respuesta1, respuesta2);
         when(usuarioServiceMock.obtenerRespuestasPorUsuario(token)).thenReturn(respuestas);

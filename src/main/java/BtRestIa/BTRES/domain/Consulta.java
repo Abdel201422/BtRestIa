@@ -5,10 +5,12 @@ import lombok.*;
 
 @Entity
 @Table(name = "consulta")
-@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Getter
+@Setter
+
 public class Consulta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -54,7 +54,7 @@ class ConsultaServiceImplTest {
     private final ModeloIA modeloIA = new ModeloIA(2L, "gpt", "chat", true);
 
     @Test
-    void procesarPregunta_flujoCompleto_devuelveDtoYPersisteEntidades() {
+    void procesarPregunta_peticionValida_devuelveDtoYPersiste() {
         try (MockedStatic<ChatClient> chatClientStatic = Mockito.mockStatic(ChatClient.class)) {
             // Mock del cliente de chat y llamadas encadenadas
             ChatClient cliente = mock(ChatClient.class);
@@ -97,7 +97,7 @@ class ConsultaServiceImplTest {
     }
 
     @Test
-    void procesarPregunta_responseNull_lanzaNullPointerException() {
+    void procesarPregunta_respuestaNula_lanzaNullPointerException() {
         try (MockedStatic<ChatClient> chatClientStatic = Mockito.mockStatic(ChatClient.class)) {
             ChatClient cliente = mock(ChatClient.class);
             ChatClientRequestSpec specPrompt = mock(ChatClientRequestSpec.class);
@@ -124,7 +124,7 @@ class ConsultaServiceImplTest {
     }
 
     @Test
-    void procesarPregunta_modeloNoEncontrado_lanzaRuntimeException() {
+    void procesarPregunta_modeloInexistente_lanzaRuntimeException() {
         when(tokenService.validateUsuarioToken(anyString())).thenReturn(usuario);
         when(modeloRepo.findByNombreAndActivoTrue("inexistente")).thenReturn(Optional.empty());
 

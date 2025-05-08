@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import BtRestIa.BTRES.application.service.TokenService;
 import BtRestIa.BTRES.domain.*;
@@ -26,7 +25,7 @@ class UsuarioServiceImplTest {
     UsuarioServiceImpl service;
 
     @Test
-    void obtenerPreguntasPorUsuario_devuelveListaDePreguntas() {
+    void obtenerPreguntasPorUsuario_tokenValido_devuelveLista() {
         Usuario u = new Usuario();
         when(tokenService.validateUsuarioToken("tok")).thenReturn(u);
 
@@ -43,7 +42,7 @@ class UsuarioServiceImplTest {
     }
 
     @Test
-    void obtenerRespuestasPorUsuario_devuelveListaDeRespuestas() {
+    void obtenerRespuestasPorUsuario_tokenValido_devuelveLista() {
         Usuario u = new Usuario();
         when(tokenService.validateUsuarioToken("tok2")).thenReturn(u);
 

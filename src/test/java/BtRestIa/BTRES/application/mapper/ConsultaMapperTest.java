@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class ConsultaMapperTest {
 
     @Test
-    void toPreguntaDto_deberiaConvertirConsultaEnPreguntaDto() {
+    void oPreguntaDto_consultaConPregunta_devuelveDtoCorrecto() {
         // Arrange
         Pregunta pregunta = Pregunta.builder()
                 .id(1L)
@@ -39,7 +39,7 @@ class ConsultaMapperTest {
     }
 
     @Test
-    void toRespuestaDto_deberiaConvertirConsultaEnRespuestaDto() {
+    void toRespuestaDto_consultaConRespuesta_devuelveDtoCorrecto() {
         // Arrange
         Respuesta respuesta = Respuesta.builder()
                 .id(1L)
@@ -61,4 +61,15 @@ class ConsultaMapperTest {
         assertEquals(respuesta.getTexto(), respuestaDto.getTexto());
         assertEquals(respuesta.getFecha(), respuestaDto.getFecha());
     }
+
+    @Test
+    void consultaMapper_sePuedeInstanciar_sinExcepciones() {
+        // Act
+        ConsultaMapper consultaMapper = new ConsultaMapper();
+
+        // Assert
+        assertNotNull(consultaMapper);
+    }
+
+
 }
