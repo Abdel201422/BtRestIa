@@ -35,7 +35,7 @@ class TokenServiceImplTest {
     }
 
     @Test
-    void validateUsuarioToken_tokenInexistente_lanza404() {
+    void validateUsuarioToken_tokenInexistente_lanzaNotFound() {
         when(usuarioRepo.findByToken("nope")).thenReturn(Optional.empty());
 
         ResponseStatusException ex = assertThrows(

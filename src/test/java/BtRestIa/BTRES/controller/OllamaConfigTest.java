@@ -15,7 +15,7 @@ class OllamaConfigTest {
     private final OllamaConfig config = new OllamaConfig();
 
     @Test
-    void ollamaApi_devuelveInstanciaConUrlCorrecta() {
+    void ollamaApi_creaInstanciaConUrlCorrecta() {
         OllamaApi api = config.ollamaApi();
         assertNotNull(api);
         assertTrue(api instanceof OllamaApi);
@@ -33,7 +33,7 @@ class OllamaConfigTest {
     }
 
     @Test
-    void getOllamaModel_configuraModeloYOpciones() {
+    void ollamaModel_configuraNombreYOpcionesCorrectamente() {
         // Preparamos DTO con un modelo concreto
         PreguntaRequestDto dto = new PreguntaRequestDto("t","texto","my-model");
         // Obtenemos el modelo:
