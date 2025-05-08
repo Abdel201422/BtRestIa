@@ -20,6 +20,7 @@ import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.ollama.OllamaChatModel;
+import org.springframework.web.server.ResponseStatusException;
 
 import BtRestIa.BTRES.application.service.impl.ConsultaServiceImpl;
 import BtRestIa.BTRES.application.service.TokenService;
@@ -128,12 +129,12 @@ class ConsultaServiceImplTest {
         when(tokenService.validateUsuarioToken(anyString())).thenReturn(usuario);
         when(modeloRepo.findByNombreAndActivoTrue("inexistente")).thenReturn(Optional.empty());
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> service.procesarPregunta(
                         new PreguntaRequestDto("x", "¿Hola?", "inexistente")
                 )
         );
-        assertEquals("Modelo IA no disponible", ex.getMessage());
+        assertEquals("404 NOT_FOUND \"Este modelo IA no está disponible o no existe.\"", ex.getMessage());
     }
 
     @Test
@@ -156,10 +157,10 @@ class ConsultaServiceImplTest {
     @Test
     void obtenerPreguntaPorToken_inexistente_lanzaRuntimeException() {
         when(preguntaRepo.findByToken("nope")).thenReturn(Optional.empty());
-        RuntimeException ex = assertThrows(RuntimeException.class,
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> service.obtenerPreguntaPorToken("nope")
         );
-        assertEquals("Pregunta no encontrada", ex.getMessage());
+        assertEquals("404 NOT_FOUND \"Pregunta no encontrada con token: nope\"", ex.getMessage());
     }
 
     @Test
@@ -182,9 +183,9 @@ class ConsultaServiceImplTest {
     @Test
     void obtenerRespuestaPorToken_inexistente_lanzaRuntimeException() {
         when(respuestaRepo.findByToken("nope")).thenReturn(Optional.empty());
-        RuntimeException ex = assertThrows(RuntimeException.class,
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> service.obtenerRespuestaPorToken("nope")
         );
-        assertEquals("Respuesta no encontrada", ex.getMessage());
+        assertEquals("404 NOT_FOUND \"Respuesta no encontrada con token: nope\"", ex.getMessage());
     }
 }
