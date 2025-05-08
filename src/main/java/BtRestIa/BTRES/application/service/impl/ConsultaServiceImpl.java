@@ -6,6 +6,11 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import BtRestIa.BTRES.application.constants.Constantes;
+import BtRestIa.BTRES.application.exception.ModeloAiNotFoundException;
+import BtRestIa.BTRES.application.exception.PreguntaNotFoundException;
+import BtRestIa.BTRES.application.exception.RespuestaNotFoundException;
 import BtRestIa.BTRES.application.service.ConsultaService;
 import BtRestIa.BTRES.application.service.TokenService;
 import BtRestIa.BTRES.domain.*;
@@ -21,79 +26,114 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ConsultaServiceImpl implements ConsultaService {
 
-    private final TokenService tokenService;
-    private final PreguntaRepository preguntaRepository;
-    private final RespuestaRepository respuestaRepository;
-    private final ConsultaRepository consultaRepository;
-    private final ModeloIaRepository modeloIARepository;
-    private final OllamaChatModel.Builder modelBuilder;
+        private final TokenService tokenService;
+        private final PreguntaRepository preguntaRepository;
+        private final RespuestaRepository respuestaRepository;
+        private final ConsultaRepository consultaRepository;
+        private final ModeloIaRepository modeloIARepository;
+        private final OllamaChatModel.Builder modelBuilder;
 
+        @Override
+        @Transactional
+        public RespuestaDto procesarPregunta(PreguntaRequestDto dto) {
+                // Validar usuario
+                Usuario usuario = validarUsuario(dto.getToken());
 
-    @Override
-    @Transactional
-    public RespuestaDto procesarPregunta(PreguntaRequestDto dto) {
+                // Persistir pregunta
+                Pregunta pregunta = guardarPregunta(dto.getTexto());
 
-        // 1) validar token de usuario
-        Usuario usuario = tokenService.validateUsuarioToken(dto.getToken());
+                // Obtener modelo IA
+                ModeloIA modeloIA = obtenerModeloIA(dto.getModelo());
 
-        // 2) guardar pregunta
-        Pregunta pregunta = preguntaRepository.save(
-                Pregunta.builder()
-                        .token(UUID.randomUUID().toString())
-                        .texto(dto.getTexto())
-                        .build()
-        );
+                // Generar respuesta desde IA
+                String textoRespuesta = generarRespuestaIa(dto.getTexto());
 
-        // 3) verificar modelo IA
-        ModeloIA modeloEntity = modeloIARepository.findByNombreAndActivoTrue(dto.getModelo())
-                .orElseThrow(() -> new RuntimeException("Modelo IA no disponible"));
+                // Persistir respuesta
+                Respuesta respuesta = guardarRespuesta(textoRespuesta);
 
-        // 4) construir y llamar a IA
-        ChatResponse chatResponse = ChatClient.create(modelBuilder.build())
-                .prompt(dto.getTexto())
-                .call()
-                .chatResponse();
+                // Registrar consulta completa
+                registrarConsulta(usuario, pregunta, respuesta, modeloIA);
 
-        // 5) comprobaciones de nulidad
-        String textoRespuesta = Objects.requireNonNull(
-                Objects.requireNonNull(
-                                Objects.requireNonNull(chatResponse, "La llamada a la IA devolvió chatResponse null")
-                                        .getResult(), "getResult() es null")
-                        .getOutput(), "getOutput() es null").getText();
+                // Devolver DTO
+                return mapearRespuestaDto(respuesta);
+        }
 
-        // 6) guardar respuesta
-        Respuesta respuesta = respuestaRepository.save(
-                Respuesta.builder()
-                        .token(UUID.randomUUID().toString())
-                        .texto(textoRespuesta)
-                        .build()
-        );
+        // Métodos privados auxiliares
+        private Usuario validarUsuario(String token) {
+                return tokenService.validateUsuarioToken(token);
+        }
 
-        // 7) guardar consulta completa
-        consultaRepository.save(
-                Consulta.builder()
-                        .usuario(usuario)
-                        .pregunta(pregunta)
-                        .respuesta(respuesta)
-                        .modeloIA(modeloEntity)
-                        .build());
+        private Pregunta guardarPregunta(String textoPregunta) {
+                return preguntaRepository.save(
+                                Pregunta.builder()
+                                                .token(generarToken())
+                                                .texto(textoPregunta)
+                                                .build());
+        }
 
-        // 8) devolver DTO
-        return RespuestaDto.of(respuesta.getToken(), respuesta.getTexto(), respuesta.getFecha());
-    }
+        private ModeloIA obtenerModeloIA(String nombreModelo) {
+                return modeloIARepository.findByNombreAndActivoTrue(nombreModelo)
+                                .orElseThrow(() -> new ModeloAiNotFoundException(Constantes.MODELO_NO_DISPONIBLE));
+        }
 
-    @Override
-    public PreguntaDto obtenerPreguntaPorToken(String token) {
-        Pregunta pregunta = preguntaRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Pregunta no encontrada"));
-        return PreguntaDto.fromEntity(pregunta);
-    }
+        private String generarRespuestaIa(String prompt) {
+                ChatResponse response = ChatClient.create(modelBuilder.build())
+                                .prompt(prompt)
+                                .call()
+                                .chatResponse();
 
-    @Override
-    public RespuestaDto obtenerRespuestaPorToken(String token) {
-        return RespuestaDto.fromEntity(respuestaRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Respuesta no encontrada")));
-    }
+                return extraerTextoRespuesta(response);
+        }
+
+        private String extraerTextoRespuesta(ChatResponse response) {
+                return Objects.requireNonNull(
+                                Objects.requireNonNull(
+                                                Objects.requireNonNull(response, Constantes.CHAT_RESPONSE_NULL)
+                                                                .getResult(),
+                                                Constantes.CHAT_RESULT_NULL)
+                                                .getOutput(),
+                                Constantes.CHAT_OUTPUT_NULL).getText();
+        }
+
+        private Respuesta guardarRespuesta(String textoRespuesta) {
+                return respuestaRepository.save(
+                                Respuesta.builder()
+                                                .token(generarToken())
+                                                .texto(textoRespuesta)
+                                                .build());
+        }
+
+        private void registrarConsulta(Usuario usuario, Pregunta pregunta, Respuesta respuesta, ModeloIA modelo) {
+                consultaRepository.save(
+                                Consulta.builder()
+                                                .usuario(usuario)
+                                                .pregunta(pregunta)
+                                                .respuesta(respuesta)
+                                                .modeloIA(modelo)
+                                                .build());
+        }
+
+        private RespuestaDto mapearRespuestaDto(Respuesta respuesta) {
+                return RespuestaDto.of(
+                                respuesta.getToken(),
+                                respuesta.getTexto(),
+                                respuesta.getFecha());
+        }
+
+        private String generarToken() {
+                return UUID.randomUUID().toString();
+        }
+
+        @Override
+        public PreguntaDto obtenerPreguntaPorToken(String token) {
+                return PreguntaDto.fromEntity(preguntaRepository.findByToken(token)
+                                .orElseThrow(() -> new PreguntaNotFoundException(token)));
+        }
+
+        @Override
+        public RespuestaDto obtenerRespuestaPorToken(String token) {
+                return RespuestaDto.fromEntity(respuestaRepository.findByToken(token)
+                                .orElseThrow(() -> new RespuestaNotFoundException(token)));
+        }
 
 }
-

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import BtRestIa.BTRES.application.service.impl.TokenServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ResponseStatusException;
 
 import BtRestIa.BTRES.domain.Usuario;
@@ -42,8 +40,7 @@ class TokenServiceImplTest {
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.validateUsuarioToken("nope")
-        );
+                () -> service.validateUsuarioToken("nope"));
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
         assertTrue(ex.getReason().contains("Usuario no encontrado"));
     }

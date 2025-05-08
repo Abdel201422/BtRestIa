@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
@@ -20,7 +19,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final ConsultaRepository consultaRepository;
 
     public UsuarioServiceImpl(TokenService tokenService,
-                              ConsultaRepository consultaRepository) {
+            ConsultaRepository consultaRepository) {
         this.tokenService = tokenService;
         this.consultaRepository = consultaRepository;
     }
@@ -31,8 +30,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = tokenService.validateUsuarioToken(userToken);
         return consultaRepository.findByUsuario(usuario)
                 .stream()
-                .map(Consulta::getPregunta)      // mapeo de Consulta → Pregunta
-                .collect(Collectors.toList());
+                .map(Consulta::getPregunta) // mapeo de Consulta → Pregunta
+                .toList();
     }
 
     @Override
@@ -41,7 +40,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = tokenService.validateUsuarioToken(userToken);
         return consultaRepository.findByUsuario(usuario)
                 .stream()
-                .map(Consulta::getRespuesta)    // mapeo de Consulta → Respuesta
-                .collect(Collectors.toList());
+                .map(Consulta::getRespuesta) // mapeo de Consulta → Respuesta
+                .toList();
     }
 }
