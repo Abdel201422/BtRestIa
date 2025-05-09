@@ -150,6 +150,7 @@
                                 <exclude>**/dto/response/*.class</exclude>
                                 <exclude>**/BtresApplication.class</exclude>
                                 <exclude>**/*$Lombok*.class</exclude>
+                                <exclude>**/exception/*.class</exclude>
                             </excludes>
                         </configuration>
                     </execution>
