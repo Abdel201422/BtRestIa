@@ -36,25 +36,13 @@ public class ConsultaServiceImpl implements ConsultaService {
         @Override
         @Transactional
         public RespuestaDto procesarPregunta(PreguntaRequestDto dto) {
-                // Validar usuario
-                Usuario usuario = validarUsuario(dto.getToken());
 
-                // Persistir pregunta
-                Pregunta pregunta = guardarPregunta(dto.getTexto());
+                Respuesta respuesta = guardarRespuesta(generarRespuestaIa(dto.getTexto()));
 
-                // Obtener modelo IA
-                ModeloIA modeloIA = obtenerModeloIA(dto.getModelo());
-
-                // Generar respuesta desde IA
-                String textoRespuesta = generarRespuestaIa(dto.getTexto());
-
-                // Persistir respuesta
-                Respuesta respuesta = guardarRespuesta(textoRespuesta);
-
-                // Registrar consulta completa
-                registrarConsulta(usuario, pregunta, respuesta, modeloIA);
-
-                // Devolver DTO
+                registrarConsulta(validarUsuario(dto.getToken()),
+                                guardarPregunta(dto.getTexto()),
+                                respuesta,
+                                obtenerModeloIA(dto.getModelo()));
                 return mapearRespuestaDto(respuesta);
         }
 
@@ -77,12 +65,11 @@ public class ConsultaServiceImpl implements ConsultaService {
         }
 
         private String generarRespuestaIa(String prompt) {
-                ChatResponse response = ChatClient.create(modelBuilder.build())
+
+                return extraerTextoRespuesta(ChatClient.create(modelBuilder.build())
                                 .prompt(prompt)
                                 .call()
-                                .chatResponse();
-
-                return extraerTextoRespuesta(response);
+                                .chatResponse());
         }
 
         private String extraerTextoRespuesta(ChatResponse response) {
