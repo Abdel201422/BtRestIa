@@ -4,6 +4,7 @@ import BtRestIa.BTRES.application.service.ConsultaService;
 import BtRestIa.BTRES.infrastructure.dto.request.PreguntaRequestDto;
 import BtRestIa.BTRES.infrastructure.dto.response.PreguntaDto;
 import BtRestIa.BTRES.infrastructure.dto.response.RespuestaDto;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class ConsultaController {
     }
 
     @PostMapping("/preguntar")
-    public ResponseEntity<RespuestaDto> preguntar(@RequestBody PreguntaRequestDto dto) {
+    public ResponseEntity<RespuestaDto> preguntar(@RequestBody PreguntaRequestDto dto) throws GitAPIException {
         return ResponseEntity.ok(consultaService.procesarPregunta(dto));
     }
 
