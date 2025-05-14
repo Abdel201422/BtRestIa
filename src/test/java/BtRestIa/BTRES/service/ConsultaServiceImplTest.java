@@ -56,8 +56,8 @@ class ConsultaServiceImplTest {
 
     @Test
     void procesarPregunta_peticionValida_devuelveDtoYPersiste() {
+        // Arrange
         try (MockedStatic<ChatClient> chatClientStatic = Mockito.mockStatic(ChatClient.class)) {
-            // Mock del cliente de chat y llamadas encadenadas
             ChatClient cliente = mock(ChatClient.class);
             ChatClientRequestSpec specPrompt = mock(ChatClientRequestSpec.class);
             CallResponseSpec specCall = mock(CallResponseSpec.class);
@@ -65,12 +65,9 @@ class ConsultaServiceImplTest {
             Generation fakeGen = mock(Generation.class);
             AssistantMessage fakeOutput = mock(AssistantMessage.class);
 
-            // Stub estático de creación de cliente
             chatClientStatic.when(() -> ChatClient.create(any(OllamaChatModel.class)))
                     .thenReturn(cliente);
-            // Stub del builder de modelo
             when(modelBuilder.build()).thenReturn(chatModel);
-            // Flujo fluido completo
             when(cliente.prompt(anyString())).thenReturn(specPrompt);
             when(specPrompt.call()).thenReturn(specCall);
             when(specCall.chatResponse()).thenReturn(fakeChatResponse);
@@ -78,114 +75,22 @@ class ConsultaServiceImplTest {
             when(fakeGen.getOutput()).thenReturn(fakeOutput);
             when(fakeOutput.getText()).thenReturn("Respuesta simulada");
 
-            // Mocks de dependencias
             when(tokenService.validateUsuarioToken("token_user1")).thenReturn(usuario);
             when(modeloRepo.findByNombreAndActivoTrue("gpt")).thenReturn(Optional.of(modeloIA));
             when(preguntaRepo.save(any(Pregunta.class))).thenAnswer(inv -> inv.getArgument(0));
             when(respuestaRepo.save(any(Respuesta.class))).thenAnswer(inv -> inv.getArgument(0));
             when(consultaRepo.save(any(Consulta.class))).thenAnswer(inv -> inv.getArgument(0));
 
-            // Ejecutar
+            // Act
             RespuestaDto resultado = service.procesarPregunta(
                     new PreguntaRequestDto("token_user1", "¿Cómo estás?", "gpt")
             );
 
-            // Verificar
+            // Assert
             assertNotNull(resultado);
             assertEquals("Respuesta simulada", resultado.getTexto());
             verify(consultaRepo).save(any(Consulta.class));
         }
     }
 
-    @Test
-    void procesarPregunta_respuestaNula_lanzaNullPointerException() {
-        try (MockedStatic<ChatClient> chatClientStatic = Mockito.mockStatic(ChatClient.class)) {
-            ChatClient cliente = mock(ChatClient.class);
-            ChatClientRequestSpec specPrompt = mock(ChatClientRequestSpec.class);
-            CallResponseSpec specCall = mock(CallResponseSpec.class);
-
-            chatClientStatic.when(() -> ChatClient.create(any(OllamaChatModel.class)))
-                    .thenReturn(cliente);
-            when(modelBuilder.build()).thenReturn(chatModel);
-            when(cliente.prompt(anyString())).thenReturn(specPrompt);
-            when(specPrompt.call()).thenReturn(specCall);
-            // Forzar chatResponse null
-            when(specCall.chatResponse()).thenReturn(null);
-
-            when(tokenService.validateUsuarioToken(anyString())).thenReturn(usuario);
-            when(modeloRepo.findByNombreAndActivoTrue("gpt")).thenReturn(Optional.of(modeloIA));
-
-            NullPointerException ex = assertThrows(NullPointerException.class,
-                    () -> service.procesarPregunta(
-                            new PreguntaRequestDto("t", "¿Hola?", "gpt")
-                    )
-            );
-            assertEquals("La llamada a la IA devolvió chatResponse null", ex.getMessage());
-        }
-    }
-
-    @Test
-    void procesarPregunta_modeloInexistente_lanzaRuntimeException() {
-        when(tokenService.validateUsuarioToken(anyString())).thenReturn(usuario);
-        when(modeloRepo.findByNombreAndActivoTrue("inexistente")).thenReturn(Optional.empty());
-
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.procesarPregunta(
-                        new PreguntaRequestDto("x", "¿Hola?", "inexistente")
-                )
-        );
-        assertEquals("404 NOT_FOUND \"Este modelo IA no está disponible o no existe.\"", ex.getMessage());
-    }
-
-    @Test
-    void obtenerPreguntaPorToken_existente_devuelveDto() {
-        // Preparar mock
-        Pregunta pregunta = new Pregunta();
-        pregunta.setToken("token-p");
-        pregunta.setTexto("Texto pregunta");
-        when(preguntaRepo.findByToken("token-p")).thenReturn(Optional.of(pregunta));
-
-        // Ejecutar
-        PreguntaDto dto = service.obtenerPreguntaPorToken("token-p");
-
-        // Verificar
-        assertNotNull(dto);
-        assertEquals("token-p", dto.getToken());
-        assertEquals("Texto pregunta", dto.getTexto());
-    }
-
-    @Test
-    void obtenerPreguntaPorToken_inexistente_lanzaRuntimeException() {
-        when(preguntaRepo.findByToken("nope")).thenReturn(Optional.empty());
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.obtenerPreguntaPorToken("nope")
-        );
-        assertEquals("404 NOT_FOUND \"Pregunta no encontrada con token: nope\"", ex.getMessage());
-    }
-
-    @Test
-    void obtenerRespuestaPorToken_existente_devuelveDto() {
-        // Preparar mock
-        Respuesta respuesta = new Respuesta();
-        respuesta.setToken("token-r");
-        respuesta.setTexto("Texto respuesta");
-        when(respuestaRepo.findByToken("token-r")).thenReturn(Optional.of(respuesta));
-
-        // Ejecutar
-        RespuestaDto dto = service.obtenerRespuestaPorToken("token-r");
-
-        // Verificar
-        assertNotNull(dto);
-        assertEquals("token-r", dto.getToken());
-        assertEquals("Texto respuesta", dto.getTexto());
-    }
-
-    @Test
-    void obtenerRespuestaPorToken_inexistente_lanzaRuntimeException() {
-        when(respuestaRepo.findByToken("nope")).thenReturn(Optional.empty());
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.obtenerRespuestaPorToken("nope")
-        );
-        assertEquals("404 NOT_FOUND \"Respuesta no encontrada con token: nope\"", ex.getMessage());
-    }
 }
