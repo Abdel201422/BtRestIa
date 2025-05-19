@@ -15,6 +15,8 @@ public class Pregunta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String token;
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String texto;
     @Builder.Default
     private LocalDateTime fecha = LocalDateTime.now();
