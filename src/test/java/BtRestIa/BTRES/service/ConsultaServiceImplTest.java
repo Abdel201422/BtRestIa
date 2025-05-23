@@ -51,6 +51,7 @@ class ConsultaServiceImplFullFlowTest {
     @InjectMocks
     private ConsultaServiceImpl service;
 
+
     @Test
     void procesarPregunta_fullFlow_happyPath() throws GitAPIException, IOException {
         // === Arrange ===
@@ -142,4 +143,48 @@ class ConsultaServiceImplFullFlowTest {
             verify(consultaRepo).save(any());
         }
     }
+
+    private final Usuario usuario = new Usuario();
+    private final ModeloIA modeloIA = new ModeloIA(2L, "gpt", "chat", true);
+
+    @Test
+    void procesarPregunta_peticionValida_devuelveDtoYPersiste() {
+        // Arrange
+        try (MockedStatic<ChatClient> chatClientStatic = Mockito.mockStatic(ChatClient.class)) {
+            ChatClient cliente = mock(ChatClient.class);
+            ChatClientRequestSpec specPrompt = mock(ChatClientRequestSpec.class);
+            CallResponseSpec specCall = mock(CallResponseSpec.class);
+            ChatResponse fakeChatResponse = mock(ChatResponse.class);
+            Generation fakeGen = mock(Generation.class);
+            AssistantMessage fakeOutput = mock(AssistantMessage.class);
+
+            chatClientStatic.when(() -> ChatClient.create(any(OllamaChatModel.class)))
+                    .thenReturn(cliente);
+            when(modelBuilder.build()).thenReturn(chatModel);
+            when(cliente.prompt(anyString())).thenReturn(specPrompt);
+            when(specPrompt.call()).thenReturn(specCall);
+            when(specCall.chatResponse()).thenReturn(fakeChatResponse);
+            when(fakeChatResponse.getResult()).thenReturn(fakeGen);
+            when(fakeGen.getOutput()).thenReturn(fakeOutput);
+            when(fakeOutput.getText()).thenReturn("Respuesta simulada");
+
+            when(tokenService.validateUsuarioToken("token_user1")).thenReturn(usuario);
+            when(modeloRepo.findByNombreAndActivoTrue("gpt")).thenReturn(Optional.of(modeloIA));
+            when(preguntaRepo.save(any(Pregunta.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(respuestaRepo.save(any(Respuesta.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(consultaRepo.save(any(Consulta.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            // Act
+            RespuestaDto resultado = service.procesarPregunta(
+                    new PreguntaRequestDto("token_user1", "¿Cómo estás?", "gpt")
+            );
+
+            // Assert
+            assertNotNull(resultado);
+            assertEquals("Respuesta simulada", resultado.getTexto());
+            verify(consultaRepo).save(any(Consulta.class));
+        }
+    }
+
+
 }

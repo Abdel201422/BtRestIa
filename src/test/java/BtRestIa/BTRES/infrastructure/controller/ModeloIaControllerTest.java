@@ -35,13 +35,17 @@ class ModeloIaControllerTest {
 
     @Test
     void getModeloIaRepository_devuelveListaDeModelos() {
+        // Arrange
         List<ModeloIA> modelos = Arrays.asList(modelo1, modelo2);
         when(modeloIaRepositoryMock.findAll()).thenReturn(modelos);
 
+        // Act
         List<ModeloIA> response = modeloIaController.getModeloIaRepository();
 
+        // Assert
         assertEquals(2, response.size());
         assertEquals(modelo1, response.get(0));
         assertEquals(modelo2, response.get(1));
     }
+
 }

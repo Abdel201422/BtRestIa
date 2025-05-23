@@ -26,35 +26,45 @@ class UsuarioServiceImplTest {
 
     @Test
     void obtenerPreguntasPorUsuario_tokenValido_devuelveLista() {
+        // Arrange
         Usuario u = new Usuario();
         when(tokenService.validateUsuarioToken("tok")).thenReturn(u);
 
-        Pregunta p1 = new Pregunta(), p2 = new Pregunta();
-        when(consultaRepo.findByUsuario(u))
-                .thenReturn(Arrays.asList(
-                        new Consulta(1L, u, null, null, p1),
-                        new Consulta(2L, u, null, null, p2)
-                ));
+        Pregunta p1 = new Pregunta();
+        Pregunta p2 = new Pregunta();
+        when(consultaRepo.findByUsuario(u)).thenReturn(Arrays.asList(
+                new Consulta(1L, u, null, null, p1),
+                new Consulta(2L, u, null, null, p2)
+        ));
 
+        // Act
         List<Pregunta> preguntas = service.obtenerPreguntasPorUsuario("tok");
+
+        // Assert
         assertEquals(2, preguntas.size());
         assertTrue(preguntas.containsAll(List.of(p1, p2)));
     }
 
+
     @Test
     void obtenerRespuestasPorUsuario_tokenValido_devuelveLista() {
+        // Arrange
         Usuario u = new Usuario();
         when(tokenService.validateUsuarioToken("tok2")).thenReturn(u);
 
-        Respuesta r1 = new Respuesta(), r2 = new Respuesta();
-        when(consultaRepo.findByUsuario(u))
-                .thenReturn(Arrays.asList(
-                        new Consulta(1L, u, null, r1, null),
-                        new Consulta(2L, u, null, r2, null)
-                ));
+        Respuesta r1 = new Respuesta();
+        Respuesta r2 = new Respuesta();
+        when(consultaRepo.findByUsuario(u)).thenReturn(Arrays.asList(
+                new Consulta(1L, u, null, r1, null),
+                new Consulta(2L, u, null, r2, null)
+        ));
 
+        // Act
         List<Respuesta> respuestas = service.obtenerRespuestasPorUsuario("tok2");
+
+        // Assert
         assertEquals(2, respuestas.size());
         assertTrue(respuestas.containsAll(List.of(r1, r2)));
     }
+
 }

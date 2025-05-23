@@ -42,12 +42,15 @@ class UsuarioControllerTest {
 
     @Test
     void getPreguntasUsuario_conTokenValido_devuelveLista() {
+        // Arrange
         String token = "user-token";
         List<Pregunta> preguntas = Arrays.asList(pregunta1, pregunta2);
         when(usuarioServiceMock.obtenerPreguntasPorUsuario(token)).thenReturn(preguntas);
 
+        // Act
         ResponseEntity<List<Pregunta>> response = usuarioController.getPreguntasUsuario(token);
 
+        // Assert
         assertEquals(200, response.getStatusCode().value());
         assertEquals(preguntas, response.getBody());
         verify(usuarioServiceMock, times(1)).obtenerPreguntasPorUsuario(token);
@@ -55,14 +58,18 @@ class UsuarioControllerTest {
 
     @Test
     void getRespuestasUsuario_conTokenValido_devuelveLista() {
+        // Arrange
         String token = "user-token";
         List<Respuesta> respuestas = Arrays.asList(respuesta1, respuesta2);
         when(usuarioServiceMock.obtenerRespuestasPorUsuario(token)).thenReturn(respuestas);
 
+        // Act
         ResponseEntity<List<Respuesta>> response = usuarioController.getRespuestasUsuario(token);
 
+        // Assert
         assertEquals(200, response.getStatusCode().value());
         assertEquals(respuestas, response.getBody());
         verify(usuarioServiceMock, times(1)).obtenerRespuestasPorUsuario(token);
     }
+
 }

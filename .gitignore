@@ -32,5 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 
-### Ignorar repositorios clonados para RAG
-repos/
+
+src/main/resources/keys/private.pem
+src/main/resources/keys/public.pem
+

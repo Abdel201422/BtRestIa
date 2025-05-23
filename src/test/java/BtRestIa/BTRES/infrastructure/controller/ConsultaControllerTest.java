@@ -42,11 +42,17 @@ class ConsultaControllerTest {
     }
 
     @Test
+
     void preguntar_conPeticionValida_devuelveRespuestaDto() throws GitAPIException, IOException {
+      
+        // Arrange
+
         when(consultaServiceMock.procesarPregunta(preguntaRequestDto)).thenReturn(respuestaDto);
 
+        // Act
         ResponseEntity<RespuestaDto> response = consultaController.preguntar(preguntaRequestDto);
 
+        // Assert
         assertEquals(200, response.getStatusCode().value());
         assertEquals(respuestaDto, response.getBody());
         verify(consultaServiceMock, times(1)).procesarPregunta(preguntaRequestDto);
@@ -54,11 +60,14 @@ class ConsultaControllerTest {
 
     @Test
     void obtenerRespuestaPorToken_conTokenValido_devuelveRespuestaDto() {
+        // Arrange
         String token = "response-token";
         when(consultaServiceMock.obtenerRespuestaPorToken(token)).thenReturn(respuestaDto);
 
+        // Act
         ResponseEntity<RespuestaDto> response = consultaController.obtenerRespuestaPorToken(token);
 
+        // Assert
         assertEquals(200, response.getStatusCode().value());
         assertEquals(respuestaDto, response.getBody());
         verify(consultaServiceMock, times(1)).obtenerRespuestaPorToken(token);
@@ -66,11 +75,14 @@ class ConsultaControllerTest {
 
     @Test
     void obtenerPreguntaPorToken_conTokenValido_devuelvePreguntaDto() {
+        // Arrange
         String token = "question-token";
         when(consultaServiceMock.obtenerPreguntaPorToken(token)).thenReturn(preguntaDto);
 
+        // Act
         ResponseEntity<PreguntaDto> response = consultaController.obtenerPreguntaPorToken(token);
 
+        // Assert
         assertEquals(200, response.getStatusCode().value());
         assertEquals(preguntaDto, response.getBody());
         verify(consultaServiceMock, times(1)).obtenerPreguntaPorToken(token);
