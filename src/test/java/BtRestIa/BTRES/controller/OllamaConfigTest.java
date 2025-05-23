@@ -43,10 +43,12 @@ class OllamaConfigTest {
 
     @Test
     void ollamaModel_configuraNombreYOpcionesCorrectamente() {
+
         // Arrange
-        PreguntaRequestDto dto = new PreguntaRequestDto("t", "texto", "my-model");
+        PreguntaRequestDto dto = new PreguntaRequestDto("t", "texto", "my-model", "https://github.com/usuario/repositorio");
 
         // Act
+
         OllamaChatModel model = config.getOllamaModel(dto);
         OllamaChatModel.Builder builder = config.ollamaModelBuilder(config.ollamaApi())
                 .defaultOptions(

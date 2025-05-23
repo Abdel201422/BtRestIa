@@ -5,6 +5,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -16,6 +17,8 @@ import BtRestIa.BTRES.application.service.ConsultaService;
 import BtRestIa.BTRES.infrastructure.dto.request.PreguntaRequestDto;
 import BtRestIa.BTRES.infrastructure.dto.response.PreguntaDto;
 import BtRestIa.BTRES.infrastructure.dto.response.RespuestaDto;
+
+import java.io.IOException;
 
 class ConsultaControllerTest {
 
@@ -33,14 +36,17 @@ class ConsultaControllerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        preguntaRequestDto = new PreguntaRequestDto("token_user1", "¿Cuál es la capital de Francia?", "mistral:latest");
+        preguntaRequestDto = new PreguntaRequestDto("token_user1", "¿Cuál es la capital de Francia?", "mistral:latest","https://github.com/usuario/repositorio");
         respuestaDto = new RespuestaDto("response-token", "La capital de Francia es París.", null);
         preguntaDto = new PreguntaDto("question-token", "¿Cuál es la capital de Francia?", null);
     }
 
     @Test
-    void preguntar_conPeticionValida_devuelveRespuestaDto() {
+
+    void preguntar_conPeticionValida_devuelveRespuestaDto() throws GitAPIException, IOException {
+      
         // Arrange
+
         when(consultaServiceMock.procesarPregunta(preguntaRequestDto)).thenReturn(respuestaDto);
 
         // Act
