@@ -12,7 +12,7 @@ import java.util.List;
 @Service
 public class CodeChunkServiceImpl implements CodeChunkService {
 
-    private static final int LINES_PER_CHUNK = 10; // Ajusta según tamaño deseado
+    private static final int LINES_PER_CHUNK = 10;
 
     /**
      * Recorre recursivamente el repositorio y chunkea cada archivo de código

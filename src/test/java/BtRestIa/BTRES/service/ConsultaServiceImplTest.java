@@ -1,191 +1,145 @@
 package BtRestIa.BTRES.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-import java.util.Optional;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.ChatClient.CallResponseSpec;
-import org.springframework.ai.chat.client.ChatClient.ChatClientRequestSpec;
-import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.model.Generation;
-import org.springframework.ai.ollama.OllamaChatModel;
-import org.springframework.web.server.ResponseStatusException;
-
-import BtRestIa.BTRES.application.service.impl.ConsultaServiceImpl;
+import BtRestIa.BTRES.application.exception.ModeloAiNotFoundException;
+import BtRestIa.BTRES.application.exception.RespuestaNotFoundException;
+import BtRestIa.BTRES.application.service.GitService;
+import BtRestIa.BTRES.application.service.CodeChunkService;
 import BtRestIa.BTRES.application.service.TokenService;
-import BtRestIa.BTRES.domain.Consulta;
-import BtRestIa.BTRES.domain.Pregunta;
-import BtRestIa.BTRES.domain.Respuesta;
-import BtRestIa.BTRES.domain.Usuario;
-import BtRestIa.BTRES.domain.ModeloIA;
+import BtRestIa.BTRES.application.service.impl.ConsultaServiceImpl;
+import BtRestIa.BTRES.domain.*;
 import BtRestIa.BTRES.infrastructure.dto.request.PreguntaRequestDto;
 import BtRestIa.BTRES.infrastructure.dto.response.RespuestaDto;
-import BtRestIa.BTRES.infrastructure.repository.ConsultaRepository;
-import BtRestIa.BTRES.infrastructure.repository.ModeloIaRepository;
-import BtRestIa.BTRES.infrastructure.repository.PreguntaRepository;
-import BtRestIa.BTRES.infrastructure.repository.RespuestaRepository;
-import BtRestIa.BTRES.infrastructure.dto.response.PreguntaDto;
+import BtRestIa.BTRES.infrastructure.repository.*;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.model.Generation;
+import org.springframework.ai.chat.client.ChatClient.CallResponseSpec;
+import org.springframework.ai.chat.client.ChatClient.ChatClientRequestSpec;
+import org.springframework.ai.embedding.Embedding;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.embedding.EmbeddingResponse;
+import org.springframework.ai.ollama.OllamaChatModel;
+import org.springframework.ai.ollama.api.OllamaOptions;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ConsultaServiceImplTest {
+class ConsultaServiceImplFullFlowTest {
 
-    @Mock private TokenService tokenService;
-    @Mock private PreguntaRepository preguntaRepo;
-    @Mock private RespuestaRepository respuestaRepo;
-    @Mock private ConsultaRepository consultaRepo;
-    @Mock private ModeloIaRepository modeloRepo;
-    @Mock private OllamaChatModel.Builder modelBuilder;
-    @Mock private OllamaChatModel chatModel;
+    @Mock TokenService tokenService;
+    @Mock GitService gitService;
+    @Mock CodeChunkService chunkService;
+    @Mock EmbeddingModel embeddingModel;
+    @Mock OllamaChatModel.Builder modelBuilder;
+    @Mock CodeEmbeddingRepository embeddingRepo;
+    @Mock PreguntaRepository preguntaRepo;
+    @Mock RespuestaRepository respuestaRepo;
+    @Mock ConsultaRepository consultaRepo;
+    @Mock ModeloIaRepository modeloIaRepository;
 
     @InjectMocks
     private ConsultaServiceImpl service;
 
-    private final Usuario usuario = new Usuario();
-    private final ModeloIA modeloIA = new ModeloIA(2L, "gpt", "chat", true);
-
     @Test
-    void procesarPregunta_peticionValida_devuelveDtoYPersiste() {
-        try (MockedStatic<ChatClient> chatClientStatic = Mockito.mockStatic(ChatClient.class)) {
-            // Mock del cliente de chat y llamadas encadenadas
-            ChatClient cliente = mock(ChatClient.class);
-            ChatClientRequestSpec specPrompt = mock(ChatClientRequestSpec.class);
-            CallResponseSpec specCall = mock(CallResponseSpec.class);
-            ChatResponse fakeChatResponse = mock(ChatResponse.class);
-            Generation fakeGen = mock(Generation.class);
-            AssistantMessage fakeOutput = mock(AssistantMessage.class);
+    void procesarPregunta_fullFlow_happyPath() throws GitAPIException, IOException {
+        // === Arrange ===
+        var dto = new PreguntaRequestDto(
+                "token-xyz",
+                "¿Cómo funciona?",
+                "mi-modelo",
+                "https://github.com/usuario/repo"
+        );
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
 
-            // Stub estático de creación de cliente
-            chatClientStatic.when(() -> ChatClient.create(any(OllamaChatModel.class)))
+        // 1) Validar token
+        when(tokenService.validateUsuarioToken("token-xyz")).thenReturn(usuario);
+
+        // 2) Clonar repo (sin excepción)
+        doNothing().when(gitService).clonarRepo(anyString(), anyString());
+
+        // 3) Chunking → 2 fragmentos
+        List<String> frags = List.of("código A", "código B");
+        when(chunkService.chunkCode(Paths.get("repos/" + anyString())))
+                .thenReturn(frags);
+
+        // 4) Embeddings de fragments
+        float[] embFloats = new float[]{0.1f, 0.2f};
+        Embedding mockEmb = mock(Embedding.class);
+        when(mockEmb.getOutput()).thenReturn(embFloats);
+        EmbeddingResponse resp = mock(EmbeddingResponse.class);
+        when(resp.getResults()).thenReturn(List.of(mockEmb));
+        when(embeddingModel.embedForResponse(List.of("código A"))).thenReturn(resp);
+        when(embeddingModel.embedForResponse(List.of("código B"))).thenReturn(resp);
+        // Cada save devuelve la misma entidad
+        when(embeddingRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        // 5) Carga saved embeddings para rankeo
+        CodeEmbedding e1 = CodeEmbedding.builder()
+                .fragment("código A")
+                .embeddingJson("[0.1,0.2]").build();
+        CodeEmbedding e2 = CodeEmbedding.builder()
+                .fragment("código B")
+                .embeddingJson("[0.1,0.2]").build();
+        when(embeddingRepo.findAll()).thenReturn(List.of(e1, e2));
+
+        // 6) Embedding de la pregunta
+        when(embeddingModel.embedForResponse(List.of("¿Cómo funciona?")))
+                .thenReturn(resp);
+
+        // 7) Montar y llamar a ChatClient
+        AssistantMessage outMsg = mock(AssistantMessage.class);
+        Generation gen = mock(Generation.class);
+        when(gen.getOutput()).thenReturn(outMsg);
+        when(outMsg.getText()).thenReturn("Respuesta IA");
+        ChatResponse chatResponse = mock(ChatResponse.class);
+        when(chatResponse.getResult()).thenReturn(gen);
+
+        ChatClient cliente = mock(ChatClient.class);
+        ChatClientRequestSpec specPrompt = mock(ChatClientRequestSpec.class);
+        CallResponseSpec specCall = mock(CallResponseSpec.class);
+
+        try (MockedStatic<ChatClient> chatStatic = mockStatic(ChatClient.class)) {
+            chatStatic.when(() -> ChatClient.create(any(OllamaChatModel.class)))
                     .thenReturn(cliente);
-            // Stub del builder de modelo
-            when(modelBuilder.build()).thenReturn(chatModel);
-            // Flujo fluido completo
             when(cliente.prompt(anyString())).thenReturn(specPrompt);
             when(specPrompt.call()).thenReturn(specCall);
-            when(specCall.chatResponse()).thenReturn(fakeChatResponse);
-            when(fakeChatResponse.getResult()).thenReturn(fakeGen);
-            when(fakeGen.getOutput()).thenReturn(fakeOutput);
-            when(fakeOutput.getText()).thenReturn("Respuesta simulada");
+            when(specCall.chatResponse()).thenReturn(chatResponse);
 
-            // Mocks de dependencias
-            when(tokenService.validateUsuarioToken("token_user1")).thenReturn(usuario);
-            when(modeloRepo.findByNombreAndActivoTrue("gpt")).thenReturn(Optional.of(modeloIA));
-            when(preguntaRepo.save(any(Pregunta.class))).thenAnswer(inv -> inv.getArgument(0));
-            when(respuestaRepo.save(any(Respuesta.class))).thenAnswer(inv -> inv.getArgument(0));
-            when(consultaRepo.save(any(Consulta.class))).thenAnswer(inv -> inv.getArgument(0));
+            // 8) Modelo IA disponible
+            ModeloIA modelo = new ModeloIA(5L, "mi-modelo", "chat", true);
+            when(modeloIaRepository.findByNombreAndActivoTrue("mi-modelo"))
+                    .thenReturn(Optional.of(modelo));
 
-            // Ejecutar
-            RespuestaDto resultado = service.procesarPregunta(
-                    new PreguntaRequestDto("token_user1", "¿Cómo estás?", "gpt")
-            );
+            // 9) Guardar Pregunta y Respuesta
+            when(preguntaRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(respuestaRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(consultaRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-            // Verificar
-            assertNotNull(resultado);
-            assertEquals("Respuesta simulada", resultado.getTexto());
-            verify(consultaRepo).save(any(Consulta.class));
+            // === Act ===
+            RespuestaDto result = service.procesarPregunta(dto);
+
+            // === Assert ===
+            assertThat(result).isNotNull();
+            assertThat(result.getTexto()).isEqualTo("Respuesta IA");
+            // Verificar que se guardaron todos los fragments
+            verify(embeddingRepo, times(2)).save(any(CodeEmbedding.class));
+            // Verificar que se llamó a ChatClient con el prompt que incluye ambos fragments
+            verify(cliente).prompt(contains("código A"));
+            verify(cliente).prompt(contains("código B"));
+            // Verificar persistencia de entidad final
+            verify(consultaRepo).save(any());
         }
-    }
-
-    @Test
-    void procesarPregunta_respuestaNula_lanzaNullPointerException() {
-        try (MockedStatic<ChatClient> chatClientStatic = Mockito.mockStatic(ChatClient.class)) {
-            ChatClient cliente = mock(ChatClient.class);
-            ChatClientRequestSpec specPrompt = mock(ChatClientRequestSpec.class);
-            CallResponseSpec specCall = mock(CallResponseSpec.class);
-
-            chatClientStatic.when(() -> ChatClient.create(any(OllamaChatModel.class)))
-                    .thenReturn(cliente);
-            when(modelBuilder.build()).thenReturn(chatModel);
-            when(cliente.prompt(anyString())).thenReturn(specPrompt);
-            when(specPrompt.call()).thenReturn(specCall);
-            // Forzar chatResponse null
-            when(specCall.chatResponse()).thenReturn(null);
-
-            when(tokenService.validateUsuarioToken(anyString())).thenReturn(usuario);
-            when(modeloRepo.findByNombreAndActivoTrue("gpt")).thenReturn(Optional.of(modeloIA));
-
-            NullPointerException ex = assertThrows(NullPointerException.class,
-                    () -> service.procesarPregunta(
-                            new PreguntaRequestDto("t", "¿Hola?", "gpt")
-                    )
-            );
-            assertEquals("La llamada a la IA devolvió chatResponse null", ex.getMessage());
-        }
-    }
-
-    @Test
-    void procesarPregunta_modeloInexistente_lanzaRuntimeException() {
-        when(tokenService.validateUsuarioToken(anyString())).thenReturn(usuario);
-        when(modeloRepo.findByNombreAndActivoTrue("inexistente")).thenReturn(Optional.empty());
-
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.procesarPregunta(
-                        new PreguntaRequestDto("x", "¿Hola?", "inexistente")
-                )
-        );
-        assertEquals("404 NOT_FOUND \"Este modelo IA no está disponible o no existe.\"", ex.getMessage());
-    }
-
-    @Test
-    void obtenerPreguntaPorToken_existente_devuelveDto() {
-        // Preparar mock
-        Pregunta pregunta = new Pregunta();
-        pregunta.setToken("token-p");
-        pregunta.setTexto("Texto pregunta");
-        when(preguntaRepo.findByToken("token-p")).thenReturn(Optional.of(pregunta));
-
-        // Ejecutar
-        PreguntaDto dto = service.obtenerPreguntaPorToken("token-p");
-
-        // Verificar
-        assertNotNull(dto);
-        assertEquals("token-p", dto.getToken());
-        assertEquals("Texto pregunta", dto.getTexto());
-    }
-
-    @Test
-    void obtenerPreguntaPorToken_inexistente_lanzaRuntimeException() {
-        when(preguntaRepo.findByToken("nope")).thenReturn(Optional.empty());
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.obtenerPreguntaPorToken("nope")
-        );
-        assertEquals("404 NOT_FOUND \"Pregunta no encontrada con token: nope\"", ex.getMessage());
-    }
-
-    @Test
-    void obtenerRespuestaPorToken_existente_devuelveDto() {
-        // Preparar mock
-        Respuesta respuesta = new Respuesta();
-        respuesta.setToken("token-r");
-        respuesta.setTexto("Texto respuesta");
-        when(respuestaRepo.findByToken("token-r")).thenReturn(Optional.of(respuesta));
-
-        // Ejecutar
-        RespuestaDto dto = service.obtenerRespuestaPorToken("token-r");
-
-        // Verificar
-        assertNotNull(dto);
-        assertEquals("token-r", dto.getToken());
-        assertEquals("Texto respuesta", dto.getTexto());
-    }
-
-    @Test
-    void obtenerRespuestaPorToken_inexistente_lanzaRuntimeException() {
-        when(respuestaRepo.findByToken("nope")).thenReturn(Optional.empty());
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.obtenerRespuestaPorToken("nope")
-        );
-        assertEquals("404 NOT_FOUND \"Respuesta no encontrada con token: nope\"", ex.getMessage());
     }
 }

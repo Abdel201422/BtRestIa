@@ -8,6 +8,8 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/consulta")
 @CrossOrigin("*")
@@ -20,7 +22,7 @@ public class ConsultaController {
     }
 
     @PostMapping("/preguntar")
-    public ResponseEntity<RespuestaDto> preguntar(@RequestBody PreguntaRequestDto dto) throws GitAPIException {
+    public ResponseEntity<RespuestaDto> preguntar(@RequestBody PreguntaRequestDto dto) throws GitAPIException, IOException {
         return ResponseEntity.ok(consultaService.procesarPregunta(dto));
     }
 

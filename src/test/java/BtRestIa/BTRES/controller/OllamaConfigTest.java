@@ -35,7 +35,7 @@ class OllamaConfigTest {
     @Test
     void ollamaModel_configuraNombreYOpcionesCorrectamente() {
         // Preparamos DTO con un modelo concreto
-        PreguntaRequestDto dto = new PreguntaRequestDto("t","texto","my-model");
+        PreguntaRequestDto dto = new PreguntaRequestDto("t","texto","my-model", "https://github.com/usuario/repositorio");
         // Obtenemos el modelo:
         OllamaChatModel model = config.getOllamaModel(dto);
         assertNotNull(model);
